@@ -5,8 +5,8 @@ from datetime import datetime
 import time
 
 newline = "\n"
-with open("free_spots_counts.csv", "w") as fp:
-    fp.write("free_spots, datetime"+newline)
+# with open("free_spots_counts.csv", "w") as fp:
+#     fp.write("free_spots, datetime"+newline)
 
 pattern = re.compile("\d+")
 url = "https://member.superfit.club/CheckinCounter/GetClubsCheckinCounterPage"
