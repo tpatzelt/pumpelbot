@@ -13,7 +13,7 @@ def weekday_plot(weekday: int, update: Update, context: CallbackContext):
     with open("free_spots_counts.csv", "r") as fp:
         csv_reader = csv.DictReader(fp, delimiter=',')
         for row in csv_reader:
-            dt = datetime.fromisoformat(row[" datetime"])
+            dt = datetime.strptime(row[" datetime"], '%Y-%m-%d %H:%M:%S.%f')
             delta = timedelta(hours=1)
             data[dt + delta] = row["free_spots"]
     path = Path("weekday-plot.jpg")
