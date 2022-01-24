@@ -8,6 +8,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 from telegram.ext import CommandHandler
 import click
+from bot.visualize import weekday_plot, mapping
 
 @click.command()
 @click.argument("telegram_token")
@@ -38,6 +39,23 @@ def main(telegram_token: str):
     #%%
     free_spots_handler = CommandHandler('free', free)
     dispatcher.add_handler(free_spots_handler)
+
+    def plot_factory(weekday: int):
+        def func(update, context):
+            return weekday_plot(weekday=weekday,update=update, context=context)
+        return func
+
+    for weekday in mapping:
+        handler = CommandHandler(mapping[weekday], plot_factory(weekday=weekday))
+        dispatcher.add_handler(handler)
+
+    def list_weekdays(update: Update, context: CallbackContext):
+        context.bot.send_message(chat_id=update.effective_chat.id, text="\\" + f"\n\\".join(list(mapping.values())))
+
+    list_weekdays_handler = CommandHandler("weekdays", list_weekdays)
+    dispatcher.add_handler(list_weekdays_handler)
+
+
 
     #%%
     updater.start_polling()
