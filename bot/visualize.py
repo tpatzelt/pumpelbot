@@ -1,25 +1,25 @@
+import os
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+import pandas as pd
+import pymongo
 from telegram import Update
 from telegram.ext import CallbackContext
-from pathlib import Path
-import csv
-from datetime import datetime, timedelta
-import pandas as pd
 
-mapping = dict(zip(range(7),["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]))
+mapping = dict(
+    zip(range(7), ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]))
+
 
 def weekday_plot(weekday: int, update: Update, context: CallbackContext):
-    data = dict()
-    with open("free_spots_counts.csv", "r") as fp:
-        csv_reader = csv.DictReader(fp, delimiter=',')
-        for row in csv_reader:
-            dt = datetime.strptime(row[" datetime"], '%Y-%m-%d %H:%M:%S.%f')
-            delta = timedelta(hours=1)
-            data[dt + delta] = row["free_spots"]
-    path = Path("weekday-plot.jpg")
-    data_df = pd.DataFrame(data=[(i, k) for i, k in data.items()])
-    # %%
+    db_password = os.environ.get("DB_PASSWORD")
+    client = pymongo.MongoClient(
+        f"mongodb+srv://tpatzelt:{db_password}@pumpelbotdb.hmwgc.mongodb.net/PumpelBotDB?retryWrites=true&w=majority")
+    db = client.free_spots
+    data_df = pd.DataFrame(
+        data=[(post["datetime"], post["free_spots"]) for post in db.posts.find()])
     data_df[1] = data_df[1].astype(int)
+    path = Path("weekday-plot.jpg")
     g = None
     for group in data_df.groupby(data_df[0].dt.weekday):
         day, day_df = group

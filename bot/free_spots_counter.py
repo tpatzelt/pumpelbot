@@ -1,12 +1,16 @@
+import os
+import re
+import time
+from datetime import datetime
+
+import pymongo
 import requests
 from bs4 import BeautifulSoup
-import re
-from datetime import datetime
-import time
 
-newline = "\n"
-# with open("free_spots_counts.csv", "w") as fp:
-#     fp.write("free_spots, datetime"+newline)
+db_password = os.environ.get("DB_PASSWORD")
+client = pymongo.MongoClient(
+    f"mongodb+srv://tpatzelt:{db_password}@pumpelbotdb.hmwgc.mongodb.net/PumpelBotDB?retryWrites=true&w=majority")
+db = client.free_spots
 
 pattern = re.compile("\d+")
 url = "https://member.superfit.club/CheckinCounter/GetClubsCheckinCounterPage"
@@ -16,6 +20,6 @@ while True:
     mydivs = soup.find_all("div", {"class": "col-md-12"})
     free_spots = pattern.findall(mydivs[2].text)[0]
     print(free_spots, datetime.now())
-    with open("free_spots_counts.csv", "a") as fp:
-        fp.write(free_spots + "," + str(datetime.now()) + newline)
-    time.sleep(60*5)
+    post = {"free_spots": int(free_spots), "datetime": datetime.now()}
+    db.posts.insert_one(post)
+    time.sleep(60 * 5)

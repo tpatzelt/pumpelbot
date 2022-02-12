@@ -1,33 +1,37 @@
-#%%
-import os
+# %%
+import logging
+
+import click
 import requests
 from bs4 import BeautifulSoup
-from telegram.ext import Updater
-import logging
 from telegram import Update
 from telegram.ext import CallbackContext
 from telegram.ext import CommandHandler
-import click
+from telegram.ext import Updater
+
 from bot.visualize import weekday_plot, mapping
+
 
 @click.command()
 @click.argument("telegram_token")
 def main(telegram_token: str):
     updater = Updater(token=telegram_token, use_context=True)
     dispatcher = updater.dispatcher
-    #%%
+    # %%
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                         level=logging.INFO)
-    #%%
+                        level=logging.INFO)
+    # %%
     help_msg = "Bro, ich bin Pumpelbot. Schreib /free um zu erfahren" \
                " wieviele Freie Plätze es gerade im SuperFit Europacenter gibt."
 
     def help(update: Update, context: CallbackContext):
         context.bot.send_message(chat_id=update.effective_chat.id, text=help_msg)
-    #%%
+
+    # %%
     help_handler = CommandHandler('help', help)
     dispatcher.add_handler(help_handler)
-    #%%
+
+    # %%
     def free(update: Update, context: CallbackContext):
         url = "https://member.superfit.club/CheckinCounter/GetClubsCheckinCounterPage"
         response = requests.get(url=url)
@@ -36,13 +40,14 @@ def main(telegram_token: str):
         text = mydivs[1].text.replace("\n", "")
         context.bot.send_message(chat_id=update.effective_chat.id, text=text)
 
-    #%%
+    # %%
     free_spots_handler = CommandHandler('free', free)
     dispatcher.add_handler(free_spots_handler)
 
     def plot_factory(weekday: int):
         def func(update, context):
-            return weekday_plot(weekday=weekday,update=update, context=context)
+            return weekday_plot(weekday=weekday, update=update, context=context)
+
         return func
 
     for weekday in mapping:
@@ -50,15 +55,15 @@ def main(telegram_token: str):
         dispatcher.add_handler(handler)
 
     def list_weekdays(update: Update, context: CallbackContext):
-        context.bot.send_message(chat_id=update.effective_chat.id, text="\\" + f"\n\\".join(list(mapping.values())))
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                                 text="\\" + f"\n\\".join(list(mapping.values())))
 
     list_weekdays_handler = CommandHandler("weekdays", list_weekdays)
     dispatcher.add_handler(list_weekdays_handler)
 
-
-
-    #%%
+    # %%
     updater.start_polling()
+
 
 if __name__ == '__main__':
     main()
