@@ -1,7 +1,7 @@
 # %%
 import logging
+import os
 
-import click
 import requests
 from bs4 import BeautifulSoup
 from telegram import Update
@@ -12,9 +12,8 @@ from telegram.ext import Updater
 from bot.visualize import weekday_plot, mapping
 
 
-@click.command()
-@click.argument("telegram_token")
-def main(telegram_token: str):
+def main():
+    telegram_token = os.environ.get("TELEGRAM_TOKEN")
     updater = Updater(token=telegram_token, use_context=True)
     dispatcher = updater.dispatcher
     # %%
