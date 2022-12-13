@@ -52,7 +52,7 @@ def get_flats(num=10):
     return [parse_div_to_flat(div) for div in mydivs[:num]]
 
 
-def main(request):
+def main():
     telegram_token = os.environ.get("TELEGRAM_TOKEN")
     updater = Updater(token=telegram_token, use_context=True)
     dispatcher = updater.dispatcher
@@ -66,16 +66,11 @@ def main(request):
     help_handler = CommandHandler('help', help)
     dispatcher.add_handler(help_handler)
 
-    def free(update: Update, context: CallbackContext):
-        url = "https://member.superfit.club/CheckinCounter/GetClubsCheckinCounterPage"
-        response = requests.get(url=url)
-        soup = BeautifulSoup(response.content, "html.parser")
-        mydivs = soup.find_all("div", {"class": "col-md-12"})
-        text = mydivs[1].text.replace("\n", "")
-        context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+    def chat_id(update: Update, context: CallbackContext):
+        context.bot.send_message(chat_id=update.effective_chat.id, text=str(update.effective_chat.id))
 
-    free_spots_handler = CommandHandler('free', free)
-    dispatcher.add_handler(free_spots_handler)
+    chat_id_handler = CommandHandler('chat_id', chat_id)
+    dispatcher.add_handler(chat_id_handler)
 
     def start_posting(update: Update, context: CallbackContext):
         old_flat_ids = set()
@@ -86,6 +81,7 @@ def main(request):
                     context.bot.send_message(
                         chat_id=update.effective_chat.id, text=flat.url + "\n" + flat.info)
                     old_flat_ids.add(flat.id)
+                    time.sleep(1)
             time.sleep(120)
 
     start_posting_handler = CommandHandler("start_posting", start_posting)
@@ -93,3 +89,6 @@ def main(request):
 
     updater.start_polling()
     updater.idle()
+
+if __name__ == '__main__':
+    main()
