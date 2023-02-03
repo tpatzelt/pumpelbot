@@ -45,7 +45,8 @@ def get_flat_id(div):
 
 
 def get_flats(num=10):
-    url = "https://inberlinwohnen.de/wohnungsfinder/?JrY36147-LZ"
+    url = "https://inberlinwohnen.de/wohnungsfinder/?" #JrY36147-LZ
+    url = url + os.environ.get("SEARCH_ID")
     response = requests.get(url=url)
     soup = BeautifulSoup(response.content, "html.parser")
     mydivs = soup.find_all("li", {"class": "tb-merkflat ipg"})
